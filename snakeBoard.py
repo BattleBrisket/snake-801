@@ -1,11 +1,16 @@
+
 import tkinter as tk
 import random
+from collections import deque
 
 # Grid settings
 grid_size = 6
 ROWS = grid_size
 COLS = grid_size
 CELL_SIZE = 60   # Pixel size of each grid square
+
+# Toggle
+auto_run = True
 
 
 class GameGrid(tk.Tk):
@@ -47,10 +52,14 @@ class GameGrid(tk.Tk):
         self.player = self.draw_player(self.player_list)
 
         # Bind arrow keys to player movement
-        self.bind("<Up>", lambda e: self.move_player(-1, 0))
-        self.bind("<Down>", lambda e: self.move_player(1, 0))
-        self.bind("<Left>", lambda e: self.move_player(0, -1))
-        self.bind("<Right>", lambda e: self.move_player(0, 1))
+        if auto_run == False:
+            self.bind("<Up>", lambda e: self.move_player(-1, 0))
+            self.bind("<Down>", lambda e: self.move_player(1, 0))
+            self.bind("<Left>", lambda e: self.move_player(0, -1))
+            self.bind("<Right>", lambda e: self.move_player(0, 1))
+        else:
+            from algors import hamiltonian_cycle
+            self.path = deque(hamiltonian_cycle(ROWS,COLS,self.player_list[0][0],self.player_list[0][1]))
 
         # Controls whether update loop continues
         self.game_continue = False
@@ -71,6 +80,15 @@ class GameGrid(tk.Tk):
 
     def move_player(self, dr, dc):
         """Move player if inside grid boundaries."""
+
+        if auto_run:
+            # Cycle path
+            last_point = self.path.popleft()
+            self.path.append(last_point)
+            new_point = self.path[0]
+            dr = new_point[0] - self.player_list[0][0]
+            dc = new_point[1] - self.player_list[0][1]
+
         # Stop movement if hitting window border
         if not (0 <= self.player_list[0][0]+dr < ROWS and 0 <= self.player_list[0][1]+dc < COLS):
             print("hit window barrier!")
@@ -141,6 +159,9 @@ class GameGrid(tk.Tk):
         """Continuously prints occupied spaces."""
         if self.game_continue:
             return
+
+        if auto_run:
+             self.move_player(0, 0)
 
         occupied = self.get_occupied_spaces()
         print("Occupied:", occupied)
