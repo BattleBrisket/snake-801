@@ -1,7 +1,8 @@
-
+import os
 import tkinter as tk
 import random
 from collections import deque
+from PIL import Image, ImageTk
 
 # Grid settings
 grid_size = 6
@@ -41,6 +42,19 @@ class GameGrid(tk.Tk):
 
         # Store player as list (row, column)
         self.player_list = [[2,2]]
+        # Last movement direction (dr, dc); image default is down (1, 0)
+        self.last_direction = (1, 0)
+
+        # Head image in 4 rotations: original faces down, keyed by (dr, dc)
+        head_size = CELL_SIZE - 12
+        head_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "snake.png")
+        pil_img = Image.open(head_path).resize((head_size, head_size), Image.LANCZOS)
+        # (dr, dc) -> rotation in degrees (original = down)
+        direction_angles = {(1, 0): 0, (-1, 0): 180, (0, 1): 90, (0, -1): -90}
+        self.head_images = {}
+        for (dr, dc), angle in direction_angles.items():
+            rotated = pil_img.rotate(angle, expand=False)
+            self.head_images[(dr, dc)] = ImageTk.PhotoImage(rotated)
 
         # Goal state variables
         self.goal_row = None
@@ -64,22 +78,34 @@ class GameGrid(tk.Tk):
         # Controls whether update loop continues
         self.game_continue = False
 
+        # Game over when snake hits itself
+        self.game_over = False
+
         # Start update loop
         self.update_loop()
 
     def draw_player(self, player_list):
-        """Draw player circle in grid cell."""
+        """Draw player: head (index 0) as image, body segments as blue circles."""
         canvas_drawn = []
-        for coord in player_list:
+        for i, coord in enumerate(player_list):
             x1 = coord[1] * CELL_SIZE + 10
             y1 = coord[0] * CELL_SIZE + 10
             x2 = x1 + CELL_SIZE - 20
             y2 = y1 + CELL_SIZE - 20
-            canvas_drawn.append(self.canvas.create_oval(x1, y1, x2, y2, fill="blue", tags="player"))
+            if i == 0:
+                cx = (x1 + x2) / 2
+                cy = (y1 + y2) / 2
+                head_img = self.head_images.get(self.last_direction, self.head_images[(1, 0)])
+                canvas_drawn.append(self.canvas.create_image(cx, cy, image=head_img, tags="player"))
+            else:
+                canvas_drawn.append(self.canvas.create_oval(x1, y1, x2, y2, fill="blue", tags="player"))
         return canvas_drawn
 
     def move_player(self, dr, dc):
         """Move player if inside grid boundaries."""
+
+        if self.game_over:
+            return
 
         if auto_run:
             # Cycle path
@@ -93,6 +119,22 @@ class GameGrid(tk.Tk):
         if not (0 <= self.player_list[0][0]+dr < ROWS and 0 <= self.player_list[0][1]+dc < COLS):
             print("hit window barrier!")
             return
+
+        new_head_row = self.player_list[0][0] + dr
+        new_head_col = self.player_list[0][1] + dc
+
+        # Game over if head hits body (any segment except current head)
+        for i in range(1, len(self.player_list)):
+            if self.player_list[i][0] == new_head_row and self.player_list[i][1] == new_head_col:
+                self.game_over = True
+                self.show_game_over()
+                print("Game Over - snake hit its own body!")
+                if not auto_run:
+                    self.unbind("<Up>")
+                    self.unbind("<Down>")
+                    self.unbind("<Left>")
+                    self.unbind("<Right>")
+                return
 
         last_row = self.player_list[-1][0]
         last_col = self.player_list[-1][1]
@@ -113,6 +155,7 @@ class GameGrid(tk.Tk):
             self.game_continue = False
             self.spawn_goal()  # Spawn new goal
 
+        self.last_direction = (dr, dc)
         self.canvas.delete("player")
         self.player = self.draw_player(self.player_list)
 
@@ -148,6 +191,28 @@ class GameGrid(tk.Tk):
 
         self.goal = self.canvas.create_rectangle(x1, y1, x2, y2, fill="red")
 
+    def show_game_over(self):
+        """Draw Game Over overlay on the canvas."""
+        w = COLS * CELL_SIZE
+        h = ROWS * CELL_SIZE
+        margin = 40
+        # Dark overlay rectangle
+        self.canvas.create_rectangle(
+            margin, margin, w - margin, h - margin,
+            fill="black", outline="white", width=3, tags="game_over"
+        )
+        # Game Over text
+        self.canvas.create_text(
+            w // 2, h // 2,
+            text="Game Over",
+            fill="white", font=("Arial", 24, "bold"), tags="game_over"
+        )
+        self.canvas.create_text(
+            w // 2, h // 2 + 32,
+            text="Snake hit its own body",
+            fill="lightgray", font=("Arial", 12), tags="game_over"
+        )
+
     def get_occupied_spaces(self):
         """Return set of occupied grid cells (player + goal)."""
         return {
@@ -157,6 +222,8 @@ class GameGrid(tk.Tk):
 
     def update_loop(self):
         """Continuously prints occupied spaces."""
+        if self.game_over:
+            return
         if self.game_continue:
             return
 
