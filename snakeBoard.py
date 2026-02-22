@@ -10,6 +10,9 @@ ROWS = grid_size
 COLS = grid_size
 CELL_SIZE = 60   # Pixel size of each grid square
 
+# Speed: milliseconds between each move (lower = faster)
+TICK_MS = 100
+
 # Toggle
 auto_run = True
 
@@ -80,6 +83,8 @@ class GameGrid(tk.Tk):
 
         # Game over when snake hits itself
         self.game_over = False
+        # Win when snake fills the board
+        self.game_won = False
 
         # Start update loop
         self.update_loop()
@@ -104,7 +109,7 @@ class GameGrid(tk.Tk):
     def move_player(self, dr, dc):
         """Move player if inside grid boundaries."""
 
-        if self.game_over:
+        if self.game_over or self.game_won:
             return
 
         if auto_run:
@@ -151,13 +156,23 @@ class GameGrid(tk.Tk):
         # Check if player reached goal
         if self.player_list[0][0] == self.goal_row and self.player_list[0][1] == self.goal_col:
             print("Goal Reached")
-            self.player_list.append([last_row,last_col])
+            self.player_list.append([last_row, last_col])
             self.game_continue = False
-            self.spawn_goal()  # Spawn new goal
+            if len(self.player_list) == ROWS * COLS:
+                self.game_won = True
+                if not auto_run:
+                    self.unbind("<Up>")
+                    self.unbind("<Down>")
+                    self.unbind("<Left>")
+                    self.unbind("<Right>")
+            else:
+                self.spawn_goal()  # Spawn new goal
 
         self.last_direction = (dr, dc)
         self.canvas.delete("player")
         self.player = self.draw_player(self.player_list)
+        if self.game_won:
+            self.show_win()  # Draw after player so overlay is on top
 
     def spawn_goal(self):
         """Create goal in random location not on player."""
@@ -213,6 +228,26 @@ class GameGrid(tk.Tk):
             fill="lightgray", font=("Arial", 12), tags="game_over"
         )
 
+    def show_win(self):
+        """Draw win overlay on the canvas."""
+        w = COLS * CELL_SIZE
+        h = ROWS * CELL_SIZE
+        margin = 40
+        self.canvas.create_rectangle(
+            margin, margin, w - margin, h - margin,
+            fill="darkgreen", outline="gold", width=3, tags="game_win"
+        )
+        self.canvas.create_text(
+            w // 2, h // 2,
+            text="You Win!",
+            fill="gold", font=("Arial", 24, "bold"), tags="game_win"
+        )
+        self.canvas.create_text(
+            w // 2, h // 2 + 32,
+            text="Board complete!",
+            fill="lightgreen", font=("Arial", 12), tags="game_win"
+        )
+
     def get_occupied_spaces(self):
         """Return set of occupied grid cells (player + goal)."""
         return {
@@ -222,7 +257,7 @@ class GameGrid(tk.Tk):
 
     def update_loop(self):
         """Continuously prints occupied spaces."""
-        if self.game_over:
+        if self.game_over or self.game_won:
             return
         if self.game_continue:
             return
@@ -233,8 +268,8 @@ class GameGrid(tk.Tk):
         occupied = self.get_occupied_spaces()
         print("Occupied:", occupied)
 
-        # Call update_loop again after 600 ms
-        self.after(600, self.update_loop)
+        # Call update_loop again after TICK_MS
+        self.after(TICK_MS, self.update_loop)
 
 
 # Run game
