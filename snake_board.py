@@ -44,38 +44,55 @@ class SnakeGame(tk.Tk):
         self._tick_ms = tick_ms
         self.state = GameState(rows=rows, cols=cols)
         self._strategy = strategy  # None = play with arrow keys
+        self._tick_job: str | None = None
 
         self._build_canvas()
         self._draw_grid()
         self._load_head_images()
         self._draw_goal()
         self._draw_snake()
+        self.bind("<Escape>", self._on_escape)
 
         if self._strategy is None:
             self._bind_keys()
         else:
-            self.after(self._tick_ms, self._tick)
+            self._schedule_tick()
 
     # --- Main flow ---
 
+    def _schedule_tick(self) -> None:
+        if self._tick_job is None:
+            self._tick_job = self.after(self._tick_ms, self._tick)
+
     def _tick(self) -> None:
+        self._tick_job = None
         if self.state.state_over or self.state.state_won:
             return
         delta_row, delta_col = self._strategy.get_next_direction(self.state)
         self._move(delta_row, delta_col)
-        self.after(self._tick_ms, self._tick)
+        self._schedule_tick()
 
     def _move(self, delta_row: int, delta_col: int) -> None:
         """Apply one move. Caller must pass the direction (from key or from strategy)."""
         if self.state.state_over or self.state.state_won:
             return
+        if self._strategy is None:
+            if len(self.state.snake) > 1:
+                current_delta_row, current_delta_col = self.state.direction
+                if (delta_row, delta_col) == (-current_delta_row, -current_delta_col):
+                    return
+            head_row, head_col = self.state.snake[0]
+            next_row = head_row + delta_row
+            next_col = head_col + delta_col
+            if not (0 <= next_row < self.state.rows and 0 <= next_col < self.state.cols):
+                return
 
         if not self.state.step(delta_row, delta_col):
             if self.state.state_over:
                 self._draw_snake()
                 self._draw_overlay(
                     "game_over", "black", "white",
-                    "Game Over", "Snake hit its own body",
+                    "Game Over", "Press Esc to reset.",
                     "white", "lightgray",
                 )
                 if self._strategy is None:
@@ -107,6 +124,24 @@ class SnakeGame(tk.Tk):
         self.unbind("<Down>")
         self.unbind("<Left>")
         self.unbind("<Right>")
+
+    def _on_escape(self, _event: tk.Event) -> None:
+        if self.state.state_over:
+            self._reset_game()
+
+    def _reset_game(self) -> None:
+        if self._tick_job is not None:
+            self.after_cancel(self._tick_job)
+            self._tick_job = None
+        self.canvas.delete("game_over")
+        self.canvas.delete("game_win")
+        self.state = GameState(rows=self._rows, cols=self._cols)
+        self._draw_goal()
+        self._draw_snake()
+        if self._strategy is None:
+            self._bind_keys()
+        else:
+            self._schedule_tick()
 
     # --- Drawing ---
 
