@@ -4,6 +4,8 @@ Snake game: SnakeGame is the application (window + grid + input). GameState live
 from __future__ import annotations
 
 import os
+import random
+import time
 import tkinter as tk
 from PIL import Image, ImageTk
 
@@ -34,6 +36,7 @@ class SnakeGame(tk.Tk):
         cols: int = 6,
         tick_ms: int = 100,
         strategy: SnakeStrategy | None = None,
+        seed: int | None = None,
     ):
         super().__init__()
         self.title("Snake Game")
@@ -42,9 +45,14 @@ class SnakeGame(tk.Tk):
         self._rows = rows
         self._cols = cols
         self._tick_ms = tick_ms
-        self.state = GameState(rows=rows, cols=cols)
+        self._seed = seed
+        self.state = self._new_state()
         self._strategy = strategy  # None = play with arrow keys
         self._tick_job: str | None = None
+        self._moves = 0
+        self._apples_eaten = 0
+        self._run_started_at = time.perf_counter()
+        self._metrics_reported = False
 
         self._build_canvas()
         self._draw_grid()
@@ -59,6 +67,10 @@ class SnakeGame(tk.Tk):
             self._schedule_tick()
 
     # --- Main flow ---
+
+    def _new_state(self) -> GameState:
+        rng = random.Random(self._seed)
+        return GameState(rows=self._rows, cols=self._cols, rng=rng)
 
     def _schedule_tick(self) -> None:
         if self._tick_job is None:
@@ -95,10 +107,13 @@ class SnakeGame(tk.Tk):
                     "Game Over", "Press Esc to reset.",
                     "white", "lightgray",
                 )
+                self._report_metrics(outcome="loss")
                 if self._strategy is None:
                     self._unbind_keys()
             return
 
+        self._moves += 1
+        self._apples_eaten = len(self.state.snake) - 1
         self._draw_goal()
         self._draw_snake()
         if self.state.state_won:
@@ -107,6 +122,7 @@ class SnakeGame(tk.Tk):
                 "You Win!", "Board complete!",
                 "gold", "lightgreen",
             )
+            self._report_metrics(outcome="win")
             if self._strategy is None:
                 self._unbind_keys()
 
@@ -135,13 +151,47 @@ class SnakeGame(tk.Tk):
             self._tick_job = None
         self.canvas.delete("game_over")
         self.canvas.delete("game_win")
-        self.state = GameState(rows=self._rows, cols=self._cols)
+        self.state = self._new_state()
+        self._moves = 0
+        self._apples_eaten = 0
+        self._run_started_at = time.perf_counter()
+        self._metrics_reported = False
         self._draw_goal()
         self._draw_snake()
         if self._strategy is None:
             self._bind_keys()
         else:
             self._schedule_tick()
+
+    def _report_metrics(self, outcome: str) -> None:
+        if self._metrics_reported:
+            return
+        self._metrics_reported = True
+
+        coverage = (len(self.state.snake) / (self._rows * self._cols)) * 100.0
+        lines = [
+            "",
+            "--- Visual Run Metrics ---",
+            f"Mode: {'manual' if self._strategy is None else 'strategy'}",
+            f"Outcome: {outcome}",
+            f"Moves: {self._moves}",
+            f"Apples eaten: {self._apples_eaten}",
+            f"Final length: {len(self.state.snake)} / {self._rows * self._cols}",
+            f"Board coverage: {coverage:.1f}%",
+        ]
+
+        if self._strategy is not None:
+            elapsed_s = time.perf_counter() - self._run_started_at
+            avg_decision_ms = (elapsed_s * 1000.0 / self._moves) if self._moves else 0.0
+            lines.extend(
+                [
+                    f"Strategy: {self._strategy.__class__.__name__}",
+                    f"Runtime (s): {elapsed_s:.2f}",
+                    f"Average decision runtime (ms): {avg_decision_ms:.3f}",
+                ]
+            )
+
+        print("\n".join(lines))
 
     # --- Drawing ---
 

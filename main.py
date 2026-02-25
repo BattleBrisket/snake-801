@@ -23,12 +23,12 @@ def _parse_args() -> argparse.Namespace:
         default="manual",
         help="Movement controller. Manual is only valid in visual mode.",
     )
-    parser.add_argument("--rows", type=int, default=6, help="Grid row count.")
-    parser.add_argument("--cols", type=int, default=6, help="Grid column count.")
+    parser.add_argument("--rows", type=int, default=8, help="Grid row count.")
+    parser.add_argument("--cols", type=int, default=8, help="Grid column count.")
     parser.add_argument("--tick-ms", type=int, default=100, help="Visual tick interval in milliseconds.")
     parser.add_argument("--episodes", type=int, default=1, help="Headless: number of episodes to run.")
     parser.add_argument("--max-steps", type=int, default=1000, help="Headless: per-episode max steps.")
-    parser.add_argument("--seed", type=int, default=None, help="Headless: base random seed.")
+    parser.add_argument("--seed", type=int, default=None, help="Random seed for headless runs and visual play.")
     return parser.parse_args()
 
 
@@ -60,11 +60,14 @@ def _validate_args(args: argparse.Namespace) -> None:
 def _run_visual(args: argparse.Namespace) -> None:
     from snake_board import SnakeGame
 
+    strategy = _build_strategy(args.strategy)
+
     game = SnakeGame(
         rows=args.rows,
         cols=args.cols,
         tick_ms=args.tick_ms,
-        strategy=_build_strategy(args.strategy),
+        strategy=strategy,
+        seed=args.seed,
     )
     game.mainloop()
 

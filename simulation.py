@@ -33,10 +33,8 @@ def run_episode(
     seed: int | None = None,
 ) -> SimulationResult:
     """Run one headless simulation and return summary metrics."""
-    if seed is not None:
-        random.seed(seed)
-
-    state = GameState(rows=rows, cols=cols)
+    rng = random.Random(seed)
+    state = GameState(rows=rows, cols=cols, rng=rng)
     initial_length = len(state.snake)
     steps = 0
 

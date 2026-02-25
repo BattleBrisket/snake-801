@@ -9,11 +9,12 @@ import random
 class GameState:
     """Holds snake position, goal, and game rules. No drawing."""
 
-    def __init__(self, rows: int = 6, cols: int = 6):
+    def __init__(self, rows: int = 6, cols: int = 6, rng: random.Random | None = None):
         self.rows = rows
         self.cols = cols
-        start_row = min(2, rows - 1)
-        start_col = min(2, cols - 1)
+        self._rng = rng if rng is not None else random.Random()
+        start_row = self._rng.randrange(rows)
+        start_col = self._rng.randrange(cols)
         self.snake = [[start_row, start_col]]  # [row, col] per segment; index 0 is head
         self.direction = (1, 0)  # (dr, dc); image default is down
         self.goal: tuple[int, int] | None = None  # (row, col)
@@ -35,7 +36,7 @@ class GameState:
         if not empty_cells:
             self.goal = None
             return
-        self.goal = random.choice(empty_cells)
+        self.goal = self._rng.choice(empty_cells)
 
     def step(self, delta_row: int, delta_col: int) -> bool:
         """

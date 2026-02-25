@@ -16,6 +16,12 @@ Interactive (visual) mode examples:
 python3 main.py --mode visual --strategy manual
 
 # automated play in the UI
+python3 main.py --mode visual --strategy greedy
+
+# automated play in the UI with reproducible randomness
+python3 main.py --mode visual --strategy greedy --seed 42
+
+# automated play with a custom grid layout and tick timing
 python3 main.py --mode visual --strategy greedy --rows 8 --cols 8 --tick-ms 120
 ```
 
@@ -50,8 +56,9 @@ Common arguments (both modes):
 |---|---|---|
 | `--mode` | `visual` | `visual` (interactive UI) or `headless` (no UI simulation). |
 | `--strategy` | `manual` | `manual`, `greedy`, `hamiltonian`. `manual` is valid only in `visual` mode. |
-| `--rows` | `6` | Grid row count. Must be `> 0`. |
-| `--cols` | `6` | Grid column count. Must be `> 0`. |
+| `--rows` | `8` | Grid row count. Must be `> 0`. |
+| `--cols` | `8` | Grid column count. Must be `> 0`. |
+| `--seed` | unset | Random seed for reproducible snake spawn, first apple, and all subsequent apple placements. |
 
 Interactive-only arguments:
 
@@ -65,7 +72,6 @@ Headless-only arguments:
 |---|---|---|
 | `--episodes` | `1` | Number of simulation episodes to run. Must be `> 0`. |
 | `--max-steps` | `1000` | Per-episode step limit. Simulation stops early if this limit is hit. Must be `> 0`. |
-| `--seed` | unset | Base random seed for reproducible runs. |
 
 ## Strategies
 
