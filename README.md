@@ -91,3 +91,23 @@ To add a new strategy: subclass `SnakeStrategy` in `strategies.py`, implement `g
 - Python 3.9+
 - **Pillow** - for resizing and rotating the snake head image (see `requirements.txt`)
 - **tkinter** - usually bundled with Python
+
+## Run unit tests
+
+From the project root:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Run a single test module:
+
+```bash
+python3 -m unittest -v tests.test_game_state
+```
+
+Run a single test class:
+
+```bash
+python3 -m unittest -v tests.test_simulation.TestSimulation
+```
