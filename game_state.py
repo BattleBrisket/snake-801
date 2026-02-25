@@ -19,16 +19,23 @@ class GameState:
         self.goal: tuple[int, int] | None = None  # (row, col)
         self.state_over = False
         self.state_won = False
-        self.spawn_goal()
+        if len(self.snake) == self.rows * self.cols:
+            self.state_won = True
+        else:
+            self.spawn_goal()
 
     def spawn_goal(self) -> None:
         """Pick a random cell not occupied by the snake and set it as the goal."""
-        while True:
-            row = random.randint(0, self.rows - 1)
-            column = random.randint(0, self.cols - 1)
-            if [row, column] not in self.snake:
-                break
-        self.goal = (row, column)
+        empty_cells = [
+            (row, col)
+            for row in range(self.rows)
+            for col in range(self.cols)
+            if [row, col] not in self.snake
+        ]
+        if not empty_cells:
+            self.goal = None
+            return
+        self.goal = random.choice(empty_cells)
 
     def step(self, delta_row: int, delta_col: int) -> bool:
         """
@@ -43,6 +50,7 @@ class GameState:
         next_head_col = current_head_col + delta_col
 
         if not (0 <= next_head_row < self.rows and 0 <= next_head_col < self.cols):
+            self.state_over = True
             return False
 
         for i in range(1, len(self.snake)):
