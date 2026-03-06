@@ -20,6 +20,7 @@ class GameState:
         self.goal: tuple[int, int] | None = None  # (row, col)
         self.state_over = False
         self.state_won = False
+        self.path = []
         if len(self.snake) == self.rows * self.cols:
             self.state_won = True
         else:

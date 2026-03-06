@@ -6,7 +6,8 @@ from __future__ import annotations
 import argparse
 
 from simulation import format_batch_summary, run_batch
-from strategies import GreedyStrategy, HamiltonianStrategy, SnakeStrategy
+from strategies import (GreedyStrategy, HamiltonianStrategy, SnakeStrategy, BreadthFirstStrategy,
+                        DepthFirstStrategy, AStarStrategy)
 
 
 def _parse_args() -> argparse.Namespace:
@@ -19,7 +20,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--strategy",
-        choices=["manual", "greedy", "hamiltonian"],
+        choices=["manual", "greedy", "hamiltonian", "breadth", "depth", "astar"],
         default="manual",
         help="Movement controller. Manual is only valid in visual mode.",
     )
@@ -39,6 +40,12 @@ def _build_strategy(name: str) -> SnakeStrategy | None:
         return GreedyStrategy()
     if name == "hamiltonian":
         return HamiltonianStrategy()
+    if name == "breadth":
+        return BreadthFirstStrategy()
+    if name == "depth":
+        return DepthFirstStrategy()
+    if name == "astar":
+        return AStarStrategy()
     raise ValueError(f"Unknown strategy: {name}")
 
 
