@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import argparse
 
+from snake_board import ROWS, COLS
+
 from simulation import format_batch_summary, run_batch
 from strategies import GreedyStrategy, HamiltonianStrategy, SnakeStrategy
 
@@ -23,8 +25,8 @@ def _parse_args() -> argparse.Namespace:
         default="manual",
         help="Movement controller. Manual is only valid in visual mode.",
     )
-    parser.add_argument("--rows", type=int, default=8, help="Grid row count.")
-    parser.add_argument("--cols", type=int, default=8, help="Grid column count.")
+    parser.add_argument("--rows", type=int, default=ROWS, help="Grid row count.")
+    parser.add_argument("--cols", type=int, default=COLS, help="Grid column count.")
     parser.add_argument("--tick-ms", type=int, default=100, help="Visual tick interval in milliseconds.")
     parser.add_argument("--episodes", type=int, default=1, help="Headless: number of episodes to run.")
     parser.add_argument("--max-steps", type=int, default=1000, help="Headless: per-episode max steps.")
