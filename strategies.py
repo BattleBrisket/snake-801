@@ -22,21 +22,32 @@ class SnakeStrategy(ABC):
 class HamiltonianStrategy(SnakeStrategy):
     """Follow a Hamiltonian cycle so the snake eventually visits every cell. Path is computed once on first call."""
 
+    '''
+    Good
+    6x6
+    5x6
+    '''
     def __init__(self) -> None:
         self._path: list[tuple[int, int]] | None = None
 
     def get_next_direction(self, state: GameState) -> tuple[int, int]:
+        
+        head_row = state.snake[0][0]
+        head_col = state.snake[0][1]
+
         if self._path is None:
-            head_row, head_col = state.snake[0][0], state.snake[0][1]
             self._path = hamiltonian_cycle(state.rows, state.cols, head_row, head_col)
 
-        head_row, head_col = state.snake[0][0], state.snake[0][1]
         head = (head_row, head_col)
         for i, cell in enumerate(self._path):
             if cell == head:
                 break
         else:
-            return 0, 0  # fallback if head not in path
+            return state.direction  # fallback if head not in path
+        
+        if not self._path:
+            return state.direction
+        
         next_i = (i + 1) % len(self._path)
         next_row, next_col = self._path[next_i]
         return next_row - head_row, next_col - head_col
