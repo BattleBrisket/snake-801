@@ -12,7 +12,7 @@ from strategies import SnakeStrategy
 
 CELL_SIZE = 70
 OVERLAY_MARGIN = 40
-ROWS = 5
+ROWS = 6
 COLS = 6
 OVERLAY_FONT_TITLE = ("Arial", 24, "bold")
 OVERLAY_FONT_SUBTITLE = ("Arial", 12)
