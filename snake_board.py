@@ -128,6 +128,7 @@ class SnakeGame(tk.Tk):
         if not self.state.step(delta_row, delta_col):
 
             if self.state.state_over:
+                self._total_reward += -1000
 
                 self._draw_snake()
 
@@ -177,17 +178,18 @@ class SnakeGame(tk.Tk):
 
     def _calculate_reward(self, next_row, next_col):
 
-        goal = self.state.goal
 
-        if goal and (next_row, next_col) == goal:
-            return 1000
+      goal = self.state.goal
 
-        if goal:
+      if goal and (next_row, next_col) == goal:
+            return 300
+
+      if goal:
             dist = abs(goal[0] - next_row) + abs(goal[1] - next_col)
             if dist == 1:
-                return -0.5
-
-        return -1
+                return -25
+            
+      return -50
 
     # ------------------------------------------------------------
     # Metrics (NEW CENTRAL SYSTEM)
