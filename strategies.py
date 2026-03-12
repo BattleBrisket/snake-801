@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from algors import hamiltonian_cycle, manhattan_distance
+from algors import *
 from game_state import GameState
 
 
@@ -74,3 +74,53 @@ class GreedyStrategy(SnakeStrategy):
                 best_dist = dist
                 best_delta_row, best_delta_col = delta_row, delta_col
         return best_delta_row, best_delta_col
+
+
+class BreadthFirstStrategy(SnakeStrategy):
+
+    def get_next_direction(self, state: GameState) -> tuple[int, int]:
+        if len(state.path) == 0:
+            grid = Grid(state.rows, state.cols)
+            problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid)
+            path = path_states(breadth_first_bfs(problem))
+            path.pop(0)
+            state.path= path
+
+        head_row, head_col = state.snake[0][0], state.snake[0][1]
+        next_row, next_col = state.path.pop(0)
+
+        return next_row - head_row, next_col - head_col
+    
+
+class DepthFirstStrategy(SnakeStrategy):
+
+    def get_next_direction(self, state: GameState) -> tuple[int, int]:
+        if len(state.path) == 0:
+            grid = Grid(state.rows, state.cols)
+            problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid)
+            path = path_states(depth_first_bfs(problem))
+            path.pop(0)
+            state.path= path
+
+        head_row, head_col = state.snake[0][0], state.snake[0][1]
+        next_row, next_col = state.path.pop(0)
+
+        return next_row - head_row, next_col - head_col
+
+
+
+class AStarStrategy(SnakeStrategy):
+
+    def get_next_direction(self, state: GameState) -> tuple[int, int]:
+        if len(state.path) == 0:
+            grid = Grid(state.rows, state.cols)
+            problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid)
+            path = path_states(astar_search(problem))
+            path.pop(0)
+            state.path= path
+
+        head_row, head_col = state.snake[0][0], state.snake[0][1]
+        next_row, next_col = state.path.pop(0)
+
+        return next_row - head_row, next_col - head_col
+
