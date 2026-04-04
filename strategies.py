@@ -80,9 +80,13 @@ class BreadthFirstStrategy(SnakeStrategy):
 
     def get_next_direction(self, state: GameState) -> tuple[int, int]:
         if len(state.path) == 0:
-            grid = Grid(state.rows, state.cols)
-            problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid)
+            grid = Grid(state.rows, state.cols, state.snake)
+            problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid,snake=state.snake)
             path = path_states(breadth_first_bfs(problem))
+            if(len(path) == 0):
+                print("Stuck")
+                state.state_over == True
+                return state.snake[0][0], state.snake[0][1]
             path.pop(0)
             state.path= path
 
@@ -96,9 +100,13 @@ class DepthFirstStrategy(SnakeStrategy):
 
     def get_next_direction(self, state: GameState) -> tuple[int, int]:
         if len(state.path) == 0:
-            grid = Grid(state.rows, state.cols)
-            problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid)
+            grid = Grid(state.rows, state.cols, state.snake)
+            problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid,snake=state.snake)
             path = path_states(depth_first_bfs(problem))
+            if(len(path) == 0):
+                print("Stuck")
+                state.state_over == True
+                return state.snake[0][0], state.snake[0][1]
             path.pop(0)
             state.path= path
 
@@ -113,9 +121,13 @@ class AStarStrategy(SnakeStrategy):
 
     def get_next_direction(self, state: GameState) -> tuple[int, int]:
         if len(state.path) == 0:
-            grid = Grid(state.rows, state.cols)
+            grid = Grid(state.rows, state.cols, state.snake)
             problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid)
             path = path_states(astar_search(problem))
+            if(len(path) == 0):
+                print("Stuck")
+                state.state_over == True
+                return state.snake[0][0], state.snake[0][1]
             path.pop(0)
             state.path= path
 

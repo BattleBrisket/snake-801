@@ -95,7 +95,7 @@ def make_locations(rows, cols) -> dict:
     return pairs
 
 
-def make_pairs(rows, cols) -> dict:
+def make_pairs(rows, cols, snake_list) -> dict:
     pairs = {}
 
     # Iterate through all positions in the grid
@@ -105,19 +105,23 @@ def make_pairs(rows, cols) -> dict:
 
             # Check the cell to the right (horizontal neighbor)
             if j + 1 < cols:
-                adjacent.append((i, j + 1))
+                if [i, j + 1] not in snake_list:
+                    adjacent.append((i, j + 1))
 
             # Check the cell to the left (horizontal neighbor)
             if j - 1 >= 0:
-                adjacent.append((i, j - 1))
+                if [i, j - 1] not in snake_list:
+                    adjacent.append((i, j - 1))
 
             # Check the cell below (vertical neighbor)
             if i + 1 < rows:
-                adjacent.append((i + 1, j))
+                if [i + 1, j] not in snake_list:
+                    adjacent.append((i + 1, j))
 
             # Check the cell above (vertical neighbor)
             if i - 1 >= 0:
-                adjacent.append((i - 1, j))
+                if [i - 1, j] not in snake_list:
+                    adjacent.append((i - 1, j))
 
             # Store the adjacent pairs for this position
             pairs[(i, j)] = tuple(adjacent)
@@ -127,9 +131,9 @@ def make_pairs(rows, cols) -> dict:
 
 class Grid:
 
-    def __init__(self, rows, cols):
-        self.neighbors = make_pairs(rows,cols)
-        self.locations = make_locations(rows,cols)
+    def __init__(self, rows, cols, snake_list):
+        self.neighbors = make_pairs(rows, cols, snake_list)
+        self.locations = make_locations(rows, cols)
     
     
 def straight_line_distance(A, B):
