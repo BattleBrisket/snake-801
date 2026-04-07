@@ -37,7 +37,7 @@ python3 main.py --mode headless --strategy greedy --episodes 100 --rows 8 --cols
 |------|------|
 | **main.py** | Entry point. Creates the game and runs the UI loop. |
 | **game_state.py** | Domain: `GameState` - snake position, goal, rules (step, spawn_goal). No UI. |
-| **snake_board.py** | UI: `SnakeGame` - tkinter window, canvas, drawing, key input, tick loop. |
+| **snake_board.py** | UI: `SnakeGame` - tkinter window, canvas, drawing, key input, tick loop, UI with Displayed Metrics. |
 | **strategies.py** | Movement strategies: given `GameState`, return next direction `(delta_row, delta_col)`. |
 | **algors.py** | Pure grid algorithms: distances (e.g. Manhattan), paths (e.g. Hamiltonian cycle). No game concepts. |
 | **simulation.py** | Headless simulation runner for batch episodes + metrics output. |
