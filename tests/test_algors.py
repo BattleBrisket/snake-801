@@ -1,6 +1,7 @@
 import unittest
 
-from algors import hamiltonian_cycle, manhattan_distance
+from algors import hamiltonian_cycle, manhattan_distance, astar_search, depth_first_bfs, breadth_first_bfs, best_first_search
+from algors import Grid, SnakeProblem, path_states
 
 
 class TestAlgors(unittest.TestCase):
@@ -23,6 +24,50 @@ class TestAlgors(unittest.TestCase):
         with self.assertRaises(ValueError):
             hamiltonian_cycle(5, 5, 0, 0)
 
+    def test_breadth_first_bfs(self):
+        grid = Grid(8,8)
+        problem = SnakeProblem(initial=(0,0), goal=(7,7), grid=grid)
+
+        result = breadth_first_bfs(problem)
+        path = path_states(result)
+
+        self.assertEqual(path[-1], (7,7))
+
+        self.assertEqual(len(path) - 1, 14)
+
+    def test_astar_search(self):
+        grid = Grid(8,8)
+        problem = SnakeProblem(initial=(0,0), goal=(7,7), grid=grid)
+
+        result = astar_search(problem)
+        path = path_states(result)
+
+        self.assertEqual(path[-1], (7,7))
+
+        self.assertEqual(len(path) - 1, 14)
+
+    def test_depth_first_bfs(self):
+
+        grid = Grid(8, 8)
+        problem = SnakeProblem(initial=(0, 0), goal=(7, 7), grid=grid)
+
+        result = depth_first_bfs(problem)
+        path = path_states(result)
+
+        self.assertEqual(path[-1], (7, 7))  
+
+        self.assertTrue(len(path) >= 14)
+    
+    def test_best_first_search(self):
+        grid = Grid(8,8)
+        problem = SnakeProblem(initial=(0,0), goal=(7,7), grid=grid)
+
+        result = astar_search(problem)
+        path = path_states(result)
+
+        self.assertEqual(path[-1], (7,7))
+
+        self.assertEqual(len(path) - 1, 14)
 
 if __name__ == "__main__":
     unittest.main()

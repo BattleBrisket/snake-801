@@ -3,7 +3,7 @@ import unittest
 from unittest import mock
 
 import main
-from strategies import GreedyStrategy, HamiltonianStrategy
+from strategies import GreedyStrategy, HamiltonianStrategy, AStarStrategy
 
 
 class TestMain(unittest.TestCase):
@@ -24,6 +24,7 @@ class TestMain(unittest.TestCase):
         self.assertIsNone(main._build_strategy("manual"))
         self.assertIsInstance(main._build_strategy("greedy"), GreedyStrategy)
         self.assertIsInstance(main._build_strategy("hamiltonian"), HamiltonianStrategy)
+        self.assertIsInstance(main._build_strategy("astar"), AStarStrategy)
 
     def test_validate_args_rejects_manual_headless(self) -> None:
         args = argparse.Namespace(
