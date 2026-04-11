@@ -36,6 +36,7 @@ class HamiltonianStrategy(SnakeStrategy):
         head_col = state.snake[0][1]
 
         if self._path is None:
+            
             self._path = hamiltonian_cycle(state.rows, state.cols, head_row, head_col)
 
         head = (head_row, head_col)
@@ -84,7 +85,6 @@ class BreadthFirstStrategy(SnakeStrategy):
             problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid,snake=state.snake)
             path = path_states(breadth_first_bfs(problem))
             if(len(path) == 0):
-                print("Stuck")
                 state.state_over == True
                 return state.snake[0][0], state.snake[0][1]
             path.pop(0)
@@ -104,7 +104,6 @@ class DepthFirstStrategy(SnakeStrategy):
             problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid,snake=state.snake)
             path = path_states(depth_first_bfs(problem))
             if(len(path) == 0):
-                print("Stuck")
                 state.state_over == True
                 return state.snake[0][0], state.snake[0][1]
             path.pop(0)
@@ -125,7 +124,6 @@ class AStarStrategy(SnakeStrategy):
             problem = SnakeProblem(initial=state.snake[0],goal=state.goal,grid=grid)
             path = path_states(astar_search(problem))
             if(len(path) == 0):
-                print("Stuck")
                 state.state_over == True
                 return state.snake[0][0], state.snake[0][1]
             path.pop(0)
